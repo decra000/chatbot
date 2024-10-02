@@ -9,18 +9,28 @@ st.write("Ask me any legal question!")
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# Load LegalBERT or GPT model and tokenizer from Hugging Face
+# Load LegalBERT or an alternative model and tokenizer from Hugging Face
 @st.cache_resource
 def load_model(model_name):
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForQuestionAnswering.from_pretrained(model_name)
-    return pipeline('question-answering', model=model, tokenizer=tokenizer)
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        model = AutoModelForQuestionAnswering.from_pretrained(model_name)
+        return pipeline('question-answering', model=model, tokenizer=tokenizer)
+    except Exception as e:
+        st.error(f"Error loading model {model_name}: {e}")
+        return None
 
 # Function to handle user input and generate response
 def get_legal_response(question, context):
     qa_pipeline = load_model("deepset/legal-bert-base-uncased")  # Using LegalBERT
+    if qa_pipeline is None:
+        # If the primary model fails, fall back to an alternative model
+        qa_pipeline = load_model("bert-base-uncased")  # Fallback to BERT
+        if qa_pipeline is None:
+            return "Unable to load any model to provide answers at this time."
+    
     answer = qa_pipeline({'question': question, 'context': context})
-    return answer['answer']
+    return answer['answer'] if 'answer' in answer else "Sorry, I couldn't find an answer."
 
 # Example context for the legal chatbot (This can be dynamic, or you can use external data)
 context = """
