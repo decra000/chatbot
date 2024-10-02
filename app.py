@@ -1,6 +1,9 @@
 import streamlit as st
 import openai
 
+# Set your OpenAI API key here
+openai.api_key = "your-api-key-here"  # Replace with your actual OpenAI API key
+
 # Set up the Streamlit app layout
 st.title("Legal Chatbot")
 st.write("Ask me any legal question!")
