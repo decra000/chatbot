@@ -3,4 +3,5 @@ transformers
 torch  # Use an available version
 torchvision  # Adjust based on availability
 torchaudio  # Adjust based on availability
-openai
+
+openai==0.27.0
