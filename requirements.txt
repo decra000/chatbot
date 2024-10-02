@@ -1,5 +1,5 @@
 streamlit
 transformers
-torch==2.2.2  # Use an available version
-torchvision==0.15.2  # Adjust based on availability
-torchaudio==0.14.1  # Adjust based on availability
+torch  # Use an available version
+torchvision  # Adjust based on availability
+torchaudio  # Adjust based on availability
