@@ -1,5 +1,5 @@
 import streamlit as st
-from transformers import pipeline, AutoModelForQuestionAnswering, AutoTokenizer
+import openai
 
 # Set up the Streamlit app layout
 st.title("Legal Chatbot")
@@ -9,34 +9,19 @@ st.write("Ask me any legal question!")
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# Load LegalBERT or an alternative model and tokenizer from Hugging Face
-@st.cache_resource
-def load_model(model_name):
+# Function to get a response from OpenAI's GPT model
+def get_legal_response(question):
     try:
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
-        model = AutoModelForQuestionAnswering.from_pretrained(model_name)
-        return pipeline('question-answering', model=model, tokenizer=tokenizer)
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",  # Use the appropriate model
+            messages=[
+                {"role": "user", "content": question}
+            ]
+        )
+        return response.choices[0].message['content']
     except Exception as e:
-        st.error(f"Error loading model {model_name}: {e}")
-        return None
-
-# Function to handle user input and generate response
-def get_legal_response(question, context):
-    qa_pipeline = load_model("deepset/legal-bert-base-uncased")  # Using LegalBERT
-    if qa_pipeline is None:
-        # If the primary model fails, fall back to an alternative model
-        qa_pipeline = load_model("bert-base-uncased")  # Fallback to BERT
-        if qa_pipeline is None:
-            return "Unable to load any model to provide answers at this time."
-    
-    answer = qa_pipeline({'question': question, 'context': context})
-    return answer['answer'] if 'answer' in answer else "Sorry, I couldn't find an answer."
-
-# Example context for the legal chatbot (This can be dynamic, or you can use external data)
-context = """
-In the US, the legal structure of a Limited Liability Company (LLC) provides liability protection for its owners while allowing the flexibility of a pass-through tax structure.
-A sole proprietorship is the simplest and most common structure chosen to start a business, and it's not considered a separate legal entity.
-"""
+        st.error(f"Error communicating with OpenAI: {e}")
+        return "Sorry, I couldn't get a response."
 
 # Chat Interface
 with st.form("chat_form", clear_on_submit=True):
@@ -44,7 +29,7 @@ with st.form("chat_form", clear_on_submit=True):
     submit_button = st.form_submit_button(label="Send")
 
 if submit_button and user_input:
-    response = get_legal_response(user_input, context)
+    response = get_legal_response(user_input)
     st.session_state.chat_history.append({"user": user_input, "bot": response})
 
 # Display Chat History
