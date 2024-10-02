@@ -1,2 +1,5 @@
 streamlit
 transformers
+torch==2.0.1+cpu  # Adjust this based on your environment
+torchvision==0.15.2+cpu  # Adjust this based on your environment
+torchaudio==0.14.1+cpu  # Adjust this based on your environment
